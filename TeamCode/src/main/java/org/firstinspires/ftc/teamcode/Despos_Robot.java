@@ -59,6 +59,7 @@ public class Despos_Robot extends LinearOpMode {
 
         // Motor directions
         AssistantShooter.setDirection(DcMotorSimple.Direction.REVERSE);
+        Collector.setDirection(DcMotorSimple.Direction.REVERSE);
         BottomRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         TopLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -76,8 +77,8 @@ public class Despos_Robot extends LinearOpMode {
         boolean MINSHOOT = false;
 
 
-        double rpmLimit1 = 3200;        //MIN RPM close shot
-        double limit1 = 3500;           //MAX RPM close shot
+        double rpmLimit1 = 3000;        //MIN RPM close shot
+        double limit1 = 3400;           //MAX RPM close shot
         double rpmLimit2 = 4250;        //MIN RPM far shot
         double limit2 = 4500;           //MAX RPM far shot
 
@@ -191,7 +192,7 @@ public class Despos_Robot extends LinearOpMode {
             } else if (gamepad2.y) {
                 Collector.setPower(MAX_POWER);
             } else if (gamepad2.b) {
-                AssistantShooter.setPower(-HALF_POWER);
+                AssistantShooter.setPower(-MAX_POWER);
 
             } else {
                 AssistantShooter.setPower(NO_POWER);
