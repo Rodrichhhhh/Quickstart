@@ -146,7 +146,7 @@ public class AutotosBLUESIDE_12 extends OpMode {
                         new BezierCurve(
                                 new Pose(46.178, 94.131),
                                 new Pose(58.795, 52.005),
-                                new Pose(18.477, 49.729)
+                                new Pose(18.477, 23.775700934579422)
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(138), Math.toRadians(180))
 

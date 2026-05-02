@@ -103,7 +103,8 @@ public class AutotosLONGBLUE extends OpMode {
 
         switch (pathState) {
 
-            // ================= DRIVE TO FIRST SHOOT POSITION =================
+
+
             case 1:
                 if (!follower.isBusy()) {
 
@@ -156,7 +157,7 @@ public class AutotosLONGBLUE extends OpMode {
                 break;
 
 
-            // ================= END =================
+
             case 4:
 
                 stopShooter();
@@ -211,6 +212,7 @@ public class AutotosLONGBLUE extends OpMode {
         telemetry.addData("Now RPM", Now_RPM);
     }
 
+    //
     public void stopShooter () {
 
         ShooterMotor.setPower(0);

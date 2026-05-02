@@ -20,9 +20,6 @@ public class RobotPos2 {
 
     private IMU imu;
 
-    // =========================
-    // CONSTANTS
-    // =========================
 
     private final double TICKS_PER_REV = 8192.0;
     private final double WHEEL_RADIUS = 2.54; // cm
@@ -32,9 +29,6 @@ public class RobotPos2 {
 
     private final double P = 3.0;
 
-    // =========================
-    // POSE
-    // =========================
 
     private double x = -17;
     private double y = -14;
@@ -46,15 +40,10 @@ public class RobotPos2 {
 
     private double headingOffset = 0;
 
-    // =========================
-    // AUTO AIM
-    // =========================
 
     private boolean autoAim = false;
 
-    // =========================
-    // BASKET MEMORY
-    // =========================
+
 
     private double BASKET_X = 0;
     private double BASKET_Y = 0;
@@ -79,9 +68,6 @@ public class RobotPos2 {
         }
     }
 
-    // =========================
-    // CONSTRUCTOR
-    // =========================
 
     public RobotPos2(DcMotor leftFront, DcMotor leftBack,
                      DcMotor rightFront, DcMotor rightBack,
@@ -120,9 +106,7 @@ public class RobotPos2 {
         lastMid = midOdo.getCurrentPosition();
     }
 
-    // =========================
-    // UPDATE LOOP
-    // =========================
+
 
     public void update(boolean autoAimButton, boolean stopButton, boolean yButton) {
 
@@ -146,9 +130,7 @@ public class RobotPos2 {
         if (autoAim) autoAimMotors();
     }
 
-    // =========================
-    // HEADING (IMU ONLY)
-    // =========================
+
 
     private void updateHeading() {
 
@@ -176,8 +158,6 @@ public class RobotPos2 {
                 imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
     }
 
-    // =========================
-    // ODOMETRY (IMU HEADING)
 
     private void updateOdometry() {
 
@@ -213,11 +193,6 @@ public class RobotPos2 {
     private double normalize(double angle) {
         return Math.atan2(Math.sin(angle), Math.cos(angle));
     }
-
-    // =========================
-    // AUTO AIM
-    // =========================
-
 
 
     private void autoAimMotors() {
@@ -274,9 +249,6 @@ public class RobotPos2 {
         rightBack.setPower(0);
     }
 
-    // =========================
-    // TRIANGULATION
-    // =========================
 
     public void recordShot() {
 
@@ -334,9 +306,7 @@ public class RobotPos2 {
         );
     }
 
-    // =========================
-    // FILE SAVE
-    // =========================
+
 
     private void saveBasketToFile() {
         try {
@@ -360,9 +330,7 @@ public class RobotPos2 {
         } catch (Exception ignored) {}
     }
 
-    // =========================
-    // GETTERS
-    // =========================
+
 
     public double getX() { return x; }
     public double getY() { return y; }

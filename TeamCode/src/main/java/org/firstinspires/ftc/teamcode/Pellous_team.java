@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.pedropathing.util.Timer;
+
 
 
 import org.firstinspires.ftc.teamcode.mylib.RobotPos2;
@@ -20,6 +22,8 @@ public class Pellous_team extends LinearOpMode {
 
     private IMU imu;
     private RobotPos2 robotPos2;
+    private Timer shooterTimer = new Timer();
+
 
 
     @Override
@@ -38,7 +42,6 @@ public class Pellous_team extends LinearOpMode {
         DcMotor TopRightMotor;
         DcMotor BottomRightMotor;
         DcMotor Collector;
-        DcMotor AssistantShooter;
         DcMotor TopLMotor;
 
 
@@ -49,7 +52,8 @@ public class Pellous_team extends LinearOpMode {
 
 
         // Shooter motor (Ex)
-        DcMotorEx ShooterMotor;
+        DcMotorEx ShooterMotor, AssistantShooter;
+        ;
 
         //encoders
         DcMotor leftOdo, rightOdo, midOdo; //encoders
@@ -64,7 +68,7 @@ public class Pellous_team extends LinearOpMode {
         BottomRightMotor = hardwareMap.get(DcMotor.class, "BottomRightMotor");
         Collector = hardwareMap.get(DcMotor.class, "Collector");
         ShooterMotor = hardwareMap.get(DcMotorEx.class, "Shooter");
-        AssistantShooter = hardwareMap.get(DcMotor.class, "AssistantShooter");
+        AssistantShooter = hardwareMap.get(DcMotorEx.class, "AssistantShooter");
         led1 = hardwareMap.digitalChannel.get("redled");
         led2 = hardwareMap.digitalChannel.get("blueled");
 
@@ -79,10 +83,11 @@ public class Pellous_team extends LinearOpMode {
 
         AssistantShooter.setDirection(DcMotorSimple.Direction.REVERSE);
         midOdo.setDirection(DcMotorSimple.Direction.REVERSE);
+//        TopLMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        BottomRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
         // Motor directions
-        TopLMotor.setDirection(DcMotor.Direction.REVERSE);
         Collector.setDirection(DcMotor.Direction.REVERSE);
         ShooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -112,7 +117,7 @@ public class Pellous_team extends LinearOpMode {
 
                 BottomLeftMotor,   // left odo
                 TopRightMotor,     // right odo
-                midOdo,            // strafe odo (NEW)
+                midOdo,            // strafe odo
 
                 imu
         );
@@ -137,9 +142,15 @@ public class Pellous_team extends LinearOpMode {
         double rpmLimit2 = 3700;
         double limit2 = 3950;
 
+        double lastRPM = 0;
+        double shotBoost = 0.0;
+
 
         boolean LONGON = false;
         boolean SHORTON = false;
+
+
+
 
 
 //        RobotPose robotPose = new RobotPose(BottomLeftMotor, BottomRightMotor, TopLMotor, TopRightMotor, leftOdo, rightOdo, midOdo); //Rodo's crazy library
@@ -178,23 +189,44 @@ public class Pellous_team extends LinearOpMode {
 
             double kF2 = 0.67;
             double kF = 0.80;
-            double k = 0.002;
-            double kP = 0.15;
+            double k = 0.006;
+
 
             double currentRPM = (ShooterMotor.getVelocity() / PER_REV) * 60;
+            double AssistRPM = (AssistantShooter.getVelocity() / PER_REV) * 60;
 
+            if (currentRPM > 2000){
+                shooterTimer.resetTimer();
+            }
+
+            if (shooterTimer.getElapsedTime() >= 30) {
+
+                if (lastRPM - currentRPM > 200) {
+                    shotBoost += 0.20;
+            } else {
+                    shotBoost = 0;
+                }
+
+            lastRPM = currentRPM;
+            shooterTimer.resetTimer();
+            }
+
+
+            //Shooter logic
             double error = targeted - currentRPM;
             double sigmoid = (2.0 / (1.0 + Math.exp(-k * error))) - 1.0;
-            double correction = sigmoid * kP;
+            double correction = sigmoid * (1 - kF);
 
-            double POWER = (kF * voltageComp) + correction;
+            double POWER = (kF * voltageComp) + correction + (shotBoost * Math.max(0, sigmoid));
             POWER = Math.max(0.0, Math.min(1.0, POWER));
+
+
 
             double error2 = targeted2 - currentRPM;
             double sigmoid2 = (2.0 / (1.0 + Math.exp(-k * error2))) - 1.0;
-            double correction2 = sigmoid2 * kP;
+            double correction2 = sigmoid2 * (1 - kF2);
 
-            double POWER2 = (kF2 * voltageComp) + correction2;
+            double POWER2 = (kF2 * voltageComp) + correction2 + (shotBoost * Math.max(0, sigmoid2));
             POWER2 = Math.max(0.0, Math.min(1.0, POWER2));
 
 
@@ -218,7 +250,7 @@ public class Pellous_team extends LinearOpMode {
                 LONGON = false;
             }
 
-// Apply power
+            // Apply power
             ShooterMotor.setPower(targetPower);
 
             led1.setState(true);
@@ -234,16 +266,15 @@ public class Pellous_team extends LinearOpMode {
                 led2.setState(false);
             }
 
-            //power to assistant shooter
 
 
             //power to assistant shooter
             if (LONG && gamepad2.a) {
-                AssistantShooter.setPower(-0.7);        //adjust speed
-                Collector.setPower(-0.6);               //adjust speed
+                AssistantShooter.setPower(-1);        //adjust speed
+                Collector.setPower(-1);               //adjust speed
             } else if (SHORT && gamepad2.a) {
-                AssistantShooter.setPower(-0.7);        //adjust speed
-                Collector.setPower(-0.7);               //adjust speed
+                AssistantShooter.setPower(-1);        //adjust speed
+                Collector.setPower(-1);               //adjust speed
             } else if (gamepad2.y) {
                 Collector.setPower(MAX_POWER);
             } else if (gamepad2.b) {
@@ -258,7 +289,8 @@ public class Pellous_team extends LinearOpMode {
             }
 
 
-//            telemetry.addData("Power", targetPower);
+            telemetry.addData("Power", targetPower);
+            telemetry.addData("Boost", shotBoost);
 //            telemetry.addData("maxshot", MAXSHOOT);
 //            telemetry.addData("minshot", MINSHOOT);
 //            telemetry.addData("RPM", currentRPM);
@@ -271,7 +303,7 @@ public class Pellous_team extends LinearOpMode {
 
             // Drive control
             double rotate = gamepad1.right_stick_x;
-            double strafe = gamepad1.left_stick_x;   // flip left/right
+            double strafe = gamepad1.left_stick_x*1.1;   // flip left/right
             double forward = -gamepad1.left_stick_y;
 
             TopLMotor.setPower(forward + rotate + strafe);
@@ -298,6 +330,9 @@ public class Pellous_team extends LinearOpMode {
             telemetry.addData("Memory Active", robotPos2.isMemoryActive() ? "ON" : "OFF");
             telemetry.addData("RPM", currentRPM);
             telemetry.update();
+
+
+
 
 
         }
